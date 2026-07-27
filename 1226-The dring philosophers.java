@@ -1,0 +1,42 @@
+import java.util.concurrent.locks.ReentrantLock;
+
+class DiningPhilosophers {
+    private final ReentrantLock[] forks = new ReentrantLock[5];
+
+    public DiningPhilosophers() {
+        for (int i = 0; i < 5; i++) {
+            forks[i] = new ReentrantLock();
+        }
+    }
+
+    public void wantsToEat(int philosopher,
+                           Runnable pickLeftFork,
+                           Runnable pickRightFork,
+                           Runnable eat,
+                           Runnable putLeftFork,
+                           Runnable putRightFork) throws InterruptedException {
+
+        int leftFork = philosopher;
+        int rightFork = (philosopher + 1) % 5;
+        int firstFork = Math.min(leftFork, rightFork);
+        int secondFork = Math.max(leftFork, rightFork);
+
+        forks[firstFork].lock();
+        forks[secondFork].lock();
+        if (leftFork == firstFork) {
+            pickLeftFork.run();
+            pickRightFork.run();
+        } else {
+            pickRightFork.run();
+            pickLeftFork.run();
+        }
+
+        eat.run();
+
+        putLeftFork.run();
+        putRightFork.run();
+
+        forks[secondFork].unlock();
+        forks[firstFork].unlock();
+    }
+}
